@@ -62,6 +62,9 @@
 from random import randint
 from math import ceil
 
+DEBUG = False
+
+
 def get_adjacent(point):
      x, y, z = point
      sign = 1 if z else -1
@@ -110,7 +113,7 @@ def draw(triangles):
      deltax = maxx - minx + 1
      deltay = maxy - miny + 1
 
-     if debug:
+     if DEBUG:
           print(F'minmax {minx} {maxx}  {miny} {maxy}')
           print(F'deltas {deltax} {deltay}')
 
@@ -127,7 +130,7 @@ def draw(triangles):
 
      # move things to be at the origin ish
      triangles = {add_point(p, (-minx + 1, -miny, p[2])) for p in triangles}
-     if debug:
+     if DEBUG:
           print(F'minmæx {minx} {maxx}  {miny} {maxy}')
           print(F'dœltas {deltax} {deltay}')
 
@@ -167,7 +170,6 @@ def draw(triangles):
 
 
 if __name__ == '__main__':
-     debug = False
      tris = sim()
      print(tris)
      draw(tris)
