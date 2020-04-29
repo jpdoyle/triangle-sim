@@ -146,7 +146,7 @@ def draw(triangles):
 
      for row in range(-deltay // 2, deltax // 2 + 1):
           for line in render_cell:
-               this_rhombus = (-row, row) # I think this should be (-row, row), but this makes it work so *SHRUG?*
+               this_rhombus = (row, -row)
 
                # do better with plotting -x triangle coordinate rhombuses
                for col in range((deltay + deltax) // 2):
