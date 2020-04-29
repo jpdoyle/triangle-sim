@@ -121,18 +121,15 @@ def draw(triangles):
      # make sure deltay is odd. This ensures that the top left triangle we draw is a minus
      if deltay % 2 == 0:
           deltay += 1
-          miny -=1
+          maxy +=1
 
      # make sure deltax is odd and adjust maxx to agree
      if deltax % 2 == 0:
           deltax += 1
-          minx +=1
+          maxx +=1
 
-     # move things to be at the origin ish
-     triangles = {add_point(p, (-minx + 1, -miny, p[2])) for p in triangles}
-     if DEBUG:
-          print(F'minmæx {minx} {maxx}  {miny} {maxy}')
-          print(F'dœltas {deltax} {deltay}')
+     # move things to start at the origin
+     triangles = {add_point(p, (-minx, -miny, p[2])) for p in triangles}
 
      render_cell = [
           '----',
@@ -143,14 +140,20 @@ def draw(triangles):
           '{downleft_plus}\/{downright_plus}'
      ]
 
+     startrow = -(deltay // 2)
+     stoprow = (deltax // 2) + 1   # I think add one because range(x, y) covers [x, y) and we want [x, y]
 
-     for row in range(-deltay // 2, deltax // 2 + 1):
+     if DEBUG:
+          print(F'minmæx {minx} {maxx}  {miny} {maxy}')
+          print(F'dœltas {deltax} {deltay}')
+          print(F'start {startrow} stop {stoprow}')
+
+     for row in range(startrow, stoprow):
           for line in render_cell:
                this_rhombus = (row, -row)
 
-               # do better with plotting -x triangle coordinate rhombuses
+               # TODO: do better with plotting -x triangle coordinate rhombuses
                for col in range((deltay + deltax) // 2):
-               # for col in range(-deltax // 2, deltay // 2 + 1):
                     this_rhombus = add_point(this_rhombus, (col, col, True))
                     triangles_on = {
                          "upleft_minus":   add_point(this_rhombus, (-1, 0, False)) in triangles,
@@ -164,9 +167,6 @@ def draw(triangles):
                     triangles_on = {k: 'X' if v else ' ' for k, v in triangles_on.items()}
                     print(line.format(**triangles_on), end='')
                print()
-
-                    
-               
 
 
 if __name__ == '__main__':
