@@ -144,17 +144,16 @@ def draw(triangles):
      stoprow = (deltax // 2) + 1   # I think add one because range(x, y) covers [x, y) and we want [x, y]
 
      if DEBUG:
+          print(triangles)
           print(F'minmæx {minx} {maxx}  {miny} {maxy}')
           print(F'dœltas {deltax} {deltay}')
           print(F'start {startrow} stop {stoprow}')
 
      for row in range(startrow, stoprow):
           for line in render_cell:
-               this_rhombus = (row, -row)
-
                # TODO: do better with plotting -x triangle coordinate rhombuses
                for col in range((deltay + deltax) // 2):
-                    this_rhombus = add_point(this_rhombus, (col, col, True))
+                    this_rhombus = add_point((row, -row), (col, col, True))
                     triangles_on = {
                          "upleft_minus":   add_point(this_rhombus, (-1, 0, False)) in triangles,
                          "upright_minus":  add_point(this_rhombus, ( 0, 1, False)) in triangles,
@@ -173,6 +172,3 @@ if __name__ == '__main__':
      tris = sim()
      print(tris)
      draw(tris)
-     # draw({(0, 0, True), (0, 0, False), (1, 0, True)})
-     # draw({(0, 0, True), (0, 0, False), (1, 0, True), (0, -1, False)})
-     # draw({(0, 0, True), (0, 0, False), (1, 0, True), (0, 1, False)})
