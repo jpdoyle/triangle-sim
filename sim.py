@@ -60,7 +60,7 @@
 #  ------------
 
 from random import randint
-from math import ceil
+from math import ceil,sqrt
 
 DEBUG = False
 
@@ -74,15 +74,42 @@ def get_adjacent(point):
 def get_rand():
      return randint(0, 2) == 0
 
+from collections import defaultdict
+
+def connected(p):
+    (r,c) = p
+    return [(r,c-1),(r,c+1),((r+c%2)^1-c%2,c)]
+
+def sim1():
+    active = defaultdict(lambda: False)
+    active[(0,0)] = True
+    new_active = [(0,0)]
+    count = -1
+
+    while len(new_active) > 0:
+        # print(new_active)
+        count += 1
+        next_new = []
+        for i in set([x for p in new_active for x in connected(p)]):
+            if not active[i]:
+                if get_rand():
+                    active[i] = True
+                    next_new.append(i)
+        new_active = next_new
+    return count
 
 def sim():
+     timing = {}
      old_active = set()
      new_active = {(0, 0, False)} # our starting triangle
+     count = -1
 
      while len(new_active) > 0:
+          count += 1
           # get the list of triangle adject to the ones activated last round
           adjacent = set()
           for tri in new_active:
+               timing[tri] = count
                adjacent.update(get_adjacent(tri))
 
           # remove any active triangles
@@ -96,14 +123,16 @@ def sim():
           for tri in adjacent_off:
                if get_rand():
                     new_active |= {tri}
-     return new_active | old_active
+
+     return count #,old_active|new_active,timing)
+     # return (count,old_active|new_active,timing)
 
 
 # add two triangle coordinates, keeping the sign from the latter
 def add_point(a, b):
      return (a[0] + b[0], a[1] + b[1], b[2])
 
-def draw(triangles):
+def draw(triangles,timing):
      minx = min(triangles, key=lambda x: x[0])[0]
      miny = min(triangles, key=lambda x: x[1])[1]
      maxx = max(triangles, key=lambda x: x[0])[0]
@@ -129,6 +158,8 @@ def draw(triangles):
           maxx +=1
 
      # move things to start at the origin
+     timing = {add_point(p, (-minx, -miny, p[2])) : v for p,v in
+             timing.items()}
      triangles = {add_point(p, (-minx, -miny, p[2])) for p in triangles}
 
      render_cell = [
@@ -155,20 +186,53 @@ def draw(triangles):
                for col in range((deltay + deltax) // 2):
                     this_rhombus = add_point((row, -row), (col, col, True))
                     triangles_on = {
-                         "upleft_minus":   add_point(this_rhombus, (-1, 0, False)) in triangles,
-                         "upright_minus":  add_point(this_rhombus, ( 0, 1, False)) in triangles,
-                         "downleft_plus":  add_point(this_rhombus, (0, -1, True)) in triangles,
-                         "downright_plus": add_point(this_rhombus, (1,  0, True)) in triangles,
-                         "plus":   this_rhombus in triangles,
-                         "minus": (this_rhombus[0], this_rhombus[1], False) in triangles,
+                         "upleft_minus":   (add_point(this_rhombus,
+                             (-1, 0, False)),add_point(this_rhombus,
+                                 (-1, 0, False)) in triangles),
+                         "upright_minus":  (add_point(this_rhombus, (
+                             0, 1, False)),add_point(this_rhombus, (
+                             0, 1, False)) in triangles),
+                         "downleft_plus":  (add_point(this_rhombus, (0,
+                             -1, True)),add_point(this_rhombus, (0,
+                             -1, True)) in triangles),
+                         "downright_plus": (add_point(this_rhombus, (1,
+                             0, True)),add_point(this_rhombus, (1,
+                             0, True)) in triangles),
+                         "plus":   (this_rhombus,this_rhombus in triangles),
+                         "minus": ((this_rhombus[0], this_rhombus[1],
+                             False),(this_rhombus[0], this_rhombus[1],
+                                 False) in triangles),
                     }
 
-                    triangles_on = {k: 'X' if v else ' ' for k, v in triangles_on.items()}
+                    for k,(v0,v) in triangles_on.items():
+                        if v:
+                            assert v0 in triangles,(v0,k)
+                            assert v0 in timing,(v0,k)
+
+                    # print(timing)
+                    triangles_on = {k: chr(ord('A')+timing.get(v0,-1)) if v
+                            else ' ' for k, (v0,v) in triangles_on.items()}
                     print(line.format(**triangles_on), end='')
                print()
 
 
 if __name__ == '__main__':
-     tris = sim()
-     print(tris)
-     draw(tris)
+    for (i,f) in enumerate([sim,sim1]):
+        print(i)
+        results = [f() for _ in range(1000000)]
+        mean = sum(results)/len(results)
+        var = sum(((x-mean)**2 for x in results))/len(results)
+        stddev = sqrt(var)
+        median = sorted(results)[len(results)//2]
+
+        print("  min:",min(results))
+        print("  max:",max(results))
+        print("  mean:",mean)
+        print("  var:",var)
+        print("  stddev:",stddev)
+        print("  median:",median)
+
+    # tris = sim()
+    # print(tris)
+    # draw(tris[1],tris[2])
+
